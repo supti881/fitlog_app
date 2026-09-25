@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Oswald } from "next/font/google";
 import "./globals.css";
-import NavbarWrapper from "../components/NavbarWrapper";
+import NavbarWrapper from "@/components/NavbarWrapper";
+import Footer from "@/components/Footer";
 import { FitLogProvider } from "@/context/FitLogContext";
 
 const oswald = Oswald({
@@ -26,6 +27,7 @@ export default function RootLayout({
         <FitLogProvider>
           <NavbarWrapper />
           <main className="flex-grow">{children}</main>
+          <Footer />
         </FitLogProvider>
       </body>
     </html>
