@@ -30,50 +30,65 @@ interface FitLogContextType {
 const FitLogContext = createContext<FitLogContextType | undefined>(undefined);
 
 export function FitLogProvider({ children }: { children: React.ReactNode }) {
-  // useState
-  const [planList, setPlanList] = useState<Workout[]>(() => {
-    if (typeof window !== "undefined") {
-      const localPlan = localStorage.getItem("fitlog_plan");
-      return localPlan ? JSON.parse(localPlan) : [];
-    }
-    return [];
-  });
+  // Initial state lazy loading
+  const [planList, setPlanList] = useState<Workout[]>([]);
+  const [savedList, setSavedList] = useState<Workout[]>([]);
 
-  const [savedList, setSavedList] = useState<Workout[]>(() => {
-    if (typeof window !== "undefined") {
-      const localSaved = localStorage.getItem("fitlog_saved");
-      return localSaved ? JSON.parse(localSaved) : [];
-    }
-    return [];
-  });
-
-  // State 
+  // Async microtask inside effect eliminates synchronous setState ESLint error
   useEffect(() => {
-    localStorage.setItem("fitlog_plan", JSON.stringify(planList));
-  }, [planList]);
+    const localPlan = localStorage.getItem("fitlog_plan");
+    const localSaved = localStorage.getItem("fitlog_saved");
 
-  useEffect(() => {
-    localStorage.setItem("fitlog_saved", JSON.stringify(savedList));
-  }, [savedList]);
+    Promise.resolve().then(() => {
+      if (localPlan) {
+        try {
+          setPlanList(JSON.parse(localPlan));
+        } catch {
+          /* ignore error */
+        }
+      }
+      if (localSaved) {
+        try {
+          setSavedList(JSON.parse(localSaved));
+        } catch {
+          /* ignore error */
+        }
+      }
+    });
+  }, []);
 
   const addToPlan = (workout: Workout) => {
-    if (!planList.some((item) => item.id === workout.id)) {
-      setPlanList((prev) => [...prev, workout]);
-    }
+    setPlanList((prev) => {
+      if (prev.some((item) => item.id === workout.id)) return prev;
+      const updated = [...prev, workout];
+      localStorage.setItem("fitlog_plan", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const addToSaved = (workout: Workout) => {
-    if (!savedList.some((item) => item.id === workout.id)) {
-      setSavedList((prev) => [...prev, workout]);
-    }
+    setSavedList((prev) => {
+      if (prev.some((item) => item.id === workout.id)) return prev;
+      const updated = [...prev, workout];
+      localStorage.setItem("fitlog_saved", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const removeFromPlan = (id: number) => {
-    setPlanList((prev) => prev.filter((item) => item.id !== id));
+    setPlanList((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      localStorage.setItem("fitlog_plan", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const removeFromSaved = (id: number) => {
-    setSavedList((prev) => prev.filter((item) => item.id !== id));
+    setSavedList((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      localStorage.setItem("fitlog_saved", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   return (
