@@ -24,9 +24,8 @@ export default function Library() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("duration");
+  const [sortBy, setSortBy] = useState("id"); // Default sort set to 'id'
 
-  
   useEffect(() => {
     async function fetchWorkouts() {
       try {
@@ -34,7 +33,7 @@ export default function Library() {
         const data = await res.json();
         setWorkouts(data);
       } catch (error) {
-        console.error("Data fetch করতে সমস্যা হয়েছে:", error);
+       console.error("Failed to fetch workouts:", error);
       } finally {
         setLoading(false);
       }
@@ -42,7 +41,7 @@ export default function Library() {
     fetchWorkouts();
   }, []);
 
-  // ২. Search Filter 
+  // Search Filter
   const filteredWorkouts = workouts.filter((item) => {
     const query = search.toLowerCase();
     const matchName = item.name.toLowerCase().includes(query);
@@ -52,17 +51,18 @@ export default function Library() {
     return matchName || matchMuscle;
   });
 
-  // ৩. Sort Logic (Duration, Calories, Rating)
+  // Sort Logic 
   const sortedWorkouts = [...filteredWorkouts].sort((a, b) => {
+    if (sortBy === "id") return a.id - b.id; 
     if (sortBy === "duration") return a.duration - b.duration;
     if (sortBy === "calories") return a.caloriesBurned - b.caloriesBurned;
-    if (sortBy === "rating") return b.rating - a.rating; // সর্বোচ্চ রেটিং আগে
+    if (sortBy === "rating") return b.rating - a.rating;
     return 0;
   });
 
   return (
     <section id="library" className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-      {/* Header & Controls Container */}
+      {/* Header & Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
           <h2 className="font-[family-name:var(--font-oswald)] text-3xl md:text-4xl font-bold uppercase tracking-wide text-white">
@@ -73,9 +73,8 @@ export default function Library() {
           </p>
         </div>
 
-        {/* Search Input & Sort Dropdown */}
+        {/* Search & Sort Options */}
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          {/* Search Box */}
           <div className="relative w-full sm:w-64">
             <input
               type="text"
@@ -86,12 +85,12 @@ export default function Library() {
             />
           </div>
 
-          {/* Sort Select */}
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="bg-[#15171D] border border-[#222630] text-gray-300 text-xs px-3 py-2.5 rounded focus:outline-none focus:border-[#C2F800] cursor-pointer"
           >
+            <option value="id">Sort By ID (Default)</option>
             <option value="duration">Sort By Duration</option>
             <option value="calories">Sort By Calories</option>
             <option value="rating">Sort By Rating</option>
@@ -99,33 +98,33 @@ export default function Library() {
         </div>
       </div>
 
-      {/* Loading Skeleton / State */}
+      {/* Grid Layout */}
       {loading ? (
         <div className="flex justify-center items-center py-20 text-[#C2F800] text-base font-bold animate-pulse">
           Loading workouts...
         </div>
       ) : sortedWorkouts.length === 0 ? (
         <div className="text-center py-16 text-gray-400 text-sm">
-         No workouts found matching &quot;{search}&quot;.
+          No workouts found matching &quot;{search}&quot;.
         </div>
       ) : (
-        /* 3x4 Grid Layout */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedWorkouts.map((item) => (
             <Link key={item.id} href={`/workout/${item.id}`}>
-              <div className="bg-[#15171D] border border-[#222630] hover:border-[#C2F800] transition duration-200 rounded-xl p-4 flex flex-col h-full group cursor-pointer">
-                {/* Workout Image Container */}
-                <div className="relative w-full h-48 rounded-lg overflow-hidden mb-4 bg-[#1a1d24]">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition duration-300"
-                  />
-                </div>
+              <div className="bg-[#15171D] border border-[#222630] hover:border-[#C2F800] transition duration-200 rounded-xl p-4 flex flex-col h-full group cursor-pointer relative">
 
-                {/* Muscle Group Tags */}
+               {/* Workout Image */}
+<div className="relative w-full h-48 rounded-lg overflow-hidden mb-4 bg-[#1a1d24]">
+  <Image
+    src={item.image}
+    alt={item.name}
+    fill
+    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+    className="object-cover group-hover:scale-105 transition duration-300"
+  />
+</div>
+
+                {/* Tags */}
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {item.muscleGroups.map((muscle, index) => (
                     <span
@@ -137,7 +136,7 @@ export default function Library() {
                   ))}
                 </div>
 
-                {/* Title & Equipment */}
+                {/* Name & Equipment */}
                 <h3 className="font-[family-name:var(--font-oswald)] text-lg font-bold text-white uppercase group-hover:text-[#C2F800] transition mb-1">
                   {item.name}
                 </h3>
@@ -145,7 +144,7 @@ export default function Library() {
                   Equipment: <span className="text-gray-300">{item.equipment}</span>
                 </p>
 
-                {/* Bottom Stats Footer */}
+                {/* Footer Stats */}
                 <div className="mt-auto pt-3 border-t border-[#222630] flex items-center justify-between text-xs text-gray-400 font-medium">
                   <span>⏱️ {item.duration} min</span>
                   <span>🔥 {item.caloriesBurned} kcal</span>
