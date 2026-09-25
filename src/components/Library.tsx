@@ -24,7 +24,7 @@ export default function Library() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("id"); // Default sort set to 'id'
+  const [sortBy, setSortBy] = useState("id");
 
   useEffect(() => {
     async function fetchWorkouts() {
@@ -41,7 +41,7 @@ export default function Library() {
     fetchWorkouts();
   }, []);
 
-  // Search Filter
+  // search filter
   const filteredWorkouts = workouts.filter((item) => {
     const query = search.toLowerCase();
     const matchName = item.name.toLowerCase().includes(query);
@@ -51,7 +51,7 @@ export default function Library() {
     return matchName || matchMuscle;
   });
 
-  // Sort Logic 
+  // sort logic 
   const sortedWorkouts = [...filteredWorkouts].sort((a, b) => {
     if (sortBy === "id") return a.id - b.id; 
     if (sortBy === "duration") return a.duration - b.duration;
@@ -62,7 +62,7 @@ export default function Library() {
 
   return (
     <section id="library" className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-      {/* Header & Controls */}
+      {/* header & controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
           <h2 className="font-[family-name:var(--font-oswald)] text-3xl md:text-4xl font-bold uppercase tracking-wide text-white">
@@ -73,7 +73,7 @@ export default function Library() {
           </p>
         </div>
 
-        {/* Search & Sort Options */}
+        {/* search & sort options */}
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <div className="relative w-full sm:w-64">
             <input
@@ -98,7 +98,7 @@ export default function Library() {
         </div>
       </div>
 
-      {/* Grid Layout */}
+      
       {loading ? (
         <div className="flex justify-center items-center py-20 text-[#C2F800] text-base font-bold animate-pulse">
           Loading workouts...
@@ -113,7 +113,7 @@ export default function Library() {
             <Link key={item.id} href={`/workout/${item.id}`}>
               <div className="bg-[#15171D] border border-[#222630] hover:border-[#C2F800] transition duration-200 rounded-xl p-4 flex flex-col h-full group cursor-pointer relative">
 
-               {/* Workout Image */}
+               {/* workout image */}
 <div className="relative w-full h-48 rounded-lg overflow-hidden mb-4 bg-[#1a1d24]">
   <Image
     src={item.image}
@@ -124,7 +124,7 @@ export default function Library() {
   />
 </div>
 
-                {/* Tags */}
+                {/* tags */}
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {item.muscleGroups.map((muscle, index) => (
                     <span
@@ -136,7 +136,7 @@ export default function Library() {
                   ))}
                 </div>
 
-                {/* Name & Equipment */}
+                {/* name & equipment */}
                 <h3 className="font-[family-name:var(--font-oswald)] text-lg font-bold text-white uppercase group-hover:text-[#C2F800] transition mb-1">
                   {item.name}
                 </h3>
@@ -144,7 +144,7 @@ export default function Library() {
                   Equipment: <span className="text-gray-300">{item.equipment}</span>
                 </p>
 
-                {/* Footer Stats */}
+                {/* footer stats */}
                 <div className="mt-auto pt-3 border-t border-[#222630] flex items-center justify-between text-xs text-gray-400 font-medium">
                   <span>⏱️ {item.duration} min</span>
                   <span>🔥 {item.caloriesBurned} kcal</span>

@@ -19,7 +19,7 @@ export default function Navbar({ planCount = 0, savedCount = 0 }: NavbarProps) {
     <header className="w-full bg-[#0f1115] border-b border-[#222630]/60 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         
-        {/* Brand Logo */}
+        {/* brand logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="relative w-7 h-7">
             <Image
@@ -34,7 +34,7 @@ export default function Navbar({ planCount = 0, savedCount = 0 }: NavbarProps) {
           </span>
         </Link>
 
-        {/* Center Nav Links */}
+        {/* nav links */}
         <nav className="flex items-center gap-2 sm:gap-6 bg-[#15171D] border border-[#222630] rounded-full px-3 py-1.5 text-xs font-semibold">
           <Link
             href="/"
@@ -58,20 +58,27 @@ export default function Navbar({ planCount = 0, savedCount = 0 }: NavbarProps) {
           </Link>
         </nav>
 
-        {/* Right Badges */}
+        
         <div className="flex items-center gap-2 text-xs">
-          <div className="bg-[#15171D] border border-[#222630] text-gray-300 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+          <Link
+            href="/my-plan?tab=plan"
+            className="bg-[#15171D] border border-[#222630] hover:border-gray-500 text-gray-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 transition cursor-pointer"
+          >
             <span>Plan</span>
             <span className="bg-[#C2F800] text-black font-extrabold w-4 h-4 rounded-full flex items-center justify-center text-[10px]">
               {planCount}
             </span>
-          </div>
-          <div className="bg-[#15171D] border border-[#222630] text-gray-300 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+          </Link>
+
+          <Link
+            href="/my-plan?tab=saved"
+            className="bg-[#15171D] border border-[#222630] hover:border-gray-500 text-gray-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 transition cursor-pointer"
+          >
             <span>Saved</span>
             <span className="bg-[#222630] text-white font-bold w-4 h-4 rounded-full flex items-center justify-center text-[10px]">
               {savedCount}
             </span>
-          </div>
+          </Link>
         </div>
 
       </div>

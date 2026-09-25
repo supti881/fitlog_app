@@ -1,15 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useFitLog } from "@/context/FitLogContext";
 
-export default function MyPlanPage() {
+function MyPlanContent() {
+  const searchParams = useSearchParams();
   const { planList, savedList, removeFromPlan, removeFromSaved } = useFitLog();
+  
   const [activeTab, setActiveTab] = useState<"plan" | "saved">("plan");
   const [sortBy, setSortBy] = useState<"duration" | "calories" | "id">("duration");
   const [completedItems, setCompletedItems] = useState<number[]>([]);
+
+  
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    Promise.resolve().then(() => {
+      if (tabParam === "saved") {
+        setActiveTab("saved");
+      } else if (tabParam === "plan") {
+        setActiveTab("plan");
+      }
+    });
+  }, [searchParams]);
 
   const currentList = activeTab === "plan" ? planList : savedList;
 
@@ -206,5 +221,13 @@ export default function MyPlanPage() {
       )}
 
     </div>
+  );
+}
+
+export default function MyPlanPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-gray-400">Loading plan...</div>}>
+      <MyPlanContent />
+    </Suspense>
   );
 }

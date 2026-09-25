@@ -30,11 +30,10 @@ interface FitLogContextType {
 const FitLogContext = createContext<FitLogContextType | undefined>(undefined);
 
 export function FitLogProvider({ children }: { children: React.ReactNode }) {
-  // Initial state lazy loading
+ 
   const [planList, setPlanList] = useState<Workout[]>([]);
   const [savedList, setSavedList] = useState<Workout[]>([]);
 
-  // Async microtask inside effect eliminates synchronous setState ESLint error
   useEffect(() => {
     const localPlan = localStorage.getItem("fitlog_plan");
     const localSaved = localStorage.getItem("fitlog_saved");
@@ -44,14 +43,14 @@ export function FitLogProvider({ children }: { children: React.ReactNode }) {
         try {
           setPlanList(JSON.parse(localPlan));
         } catch {
-          /* ignore error */
+         
         }
       }
       if (localSaved) {
         try {
           setSavedList(JSON.parse(localSaved));
         } catch {
-          /* ignore error */
+         
         }
       }
     });

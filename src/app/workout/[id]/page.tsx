@@ -25,8 +25,6 @@ interface Workout {
 export default function WorkoutDetailsPage() {
   const params = useParams();
   const id = params?.id;
-
-  // Global Context Hook
   const { addToPlan, addToSaved } = useFitLog();
 
   const [workout, setWorkout] = useState<Workout | null>(null);
@@ -59,7 +57,6 @@ export default function WorkoutDetailsPage() {
     }, 3000);
   };
 
-  // Click Handlers with Context
   const handleAddToPlan = () => {
     if (workout) {
       addToPlan(workout);
@@ -109,8 +106,6 @@ export default function WorkoutDetailsPage() {
           <span>{toastMessage}</span>
         </div>
       )}
-
-      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         
         {/* Left Image Section */}
