@@ -13,8 +13,9 @@ function MyPlanContent() {
   const [activeTab, setActiveTab] = useState<"plan" | "saved">("plan");
   const [sortBy, setSortBy] = useState<"duration" | "calories" | "id">("duration");
   const [completedItems, setCompletedItems] = useState<number[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
 
-  
+  // sync tab with url
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     Promise.resolve().then(() => {
@@ -28,17 +29,17 @@ function MyPlanContent() {
 
   const currentList = activeTab === "plan" ? planList : savedList;
 
-  // Sorting logic
+  // sort workouts
   const sortedList = [...currentList].sort((a, b) => {
     if (sortBy === "duration") return b.duration - a.duration;
     if (sortBy === "calories") return b.caloriesBurned - a.caloriesBurned;
     return a.id - b.id;
   });
 
-  // Calculate Metrics
-  const totalExercises = planList.length;
-  const totalMinutes = planList.reduce((acc, item) => acc + item.duration, 0);
-  const totalCalories = planList.reduce((acc, item) => acc + item.caloriesBurned, 0);
+  // calculate live metrics
+  const totalExercises = currentList.length;
+  const totalMinutes = currentList.reduce((acc, item) => acc + item.duration, 0);
+  const totalCalories = currentList.reduce((acc, item) => acc + item.caloriesBurned, 0);
 
   const toggleMarkAsDone = (id: number) => {
     if (completedItems.includes(id)) {
@@ -48,18 +49,37 @@ function MyPlanContent() {
     }
   };
 
-  const handleRemove = (id: number) => {
+  const showToast = (message: string) => {
+    setToast(message);
+    setTimeout(() => {
+      setToast(null);
+    }, 2500);
+  };
+
+  const handleRemove = (id: number, name: string) => {
     if (activeTab === "plan") {
       removeFromPlan(id);
+      showToast(`Removed "${name}" from today's plan`);
     } else {
       removeFromSaved(id);
+      showToast(`Removed "${name}" from saved list`);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1115] text-white py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="relative min-h-screen bg-[#0f1115] text-white py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       
-      {/* Page Header */}
+      {/* remove toast */}
+      {toast && (
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 bg-[#15171D] border border-[#222630] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-2xl transition duration-300">
+          <span className="w-5 h-5 bg-rose-500 rounded-full flex items-center justify-center text-white font-bold text-[10px]">
+            ✕
+          </span>
+          <span>{toast}</span>
+        </div>
+      )}
+
+      {/* header */}
       <div className="mb-8">
         <h1 className="font-[family-name:var(--font-oswald)] text-3xl sm:text-4xl font-bold uppercase tracking-wide text-white">
           MY PLAN
@@ -69,7 +89,7 @@ function MyPlanContent() {
         </p>
       </div>
 
-      {/* Top Banner Metrics Box */}
+      {/* stats banner */}
       <div className="bg-[#15171D] border border-[#222630] rounded-2xl p-6 mb-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:divide-x sm:divide-[#222630]">
         <div className="sm:pr-6">
           <span className="text-xs font-semibold text-gray-400 block mb-2">Exercises</span>
@@ -91,10 +111,10 @@ function MyPlanContent() {
         </div>
       </div>
 
-      {/* Controls Bar */}
+      {/* controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         
-        {/* Toggle Tabs */}
+        {/* tab toggle */}
         <div className="bg-[#15171D] border border-[#222630] p-1 rounded-xl flex items-center gap-1">
           <button
             onClick={() => setActiveTab("plan")}
@@ -118,7 +138,7 @@ function MyPlanContent() {
           </button>
         </div>
 
-        {/* Sort Selector */}
+        {/* sorting */}
         <div className="flex items-center gap-2 text-xs text-gray-400">
           <span>Sort By</span>
           <select
@@ -134,7 +154,7 @@ function MyPlanContent() {
 
       </div>
 
-      {/* List Section */}
+      {/* list grid */}
       {sortedList.length === 0 ? (
         <div className="bg-[#15171D] border border-[#222630] rounded-2xl p-12 text-center my-6 flex flex-col items-center">
           <p className="text-gray-400 text-sm mb-4">
@@ -159,7 +179,7 @@ function MyPlanContent() {
                   isDone ? "border-emerald-500/50 opacity-75" : "border-[#222630]"
                 } rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition duration-200`}
               >
-                {/* Left Side: Image & Meta */}
+                {/* card meta */}
                 <div className="flex items-center gap-4 w-full sm:w-auto">
                   <div className="relative w-28 h-20 sm:w-36 sm:h-24 rounded-xl overflow-hidden bg-[#1a1d24] flex-shrink-0">
                     <Image
@@ -185,7 +205,7 @@ function MyPlanContent() {
                   </div>
                 </div>
 
-                {/* Right Side: Action Buttons */}
+                {/* action buttons */}
                 <div className="flex items-center justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#222630]">
                   <Link
                     href={`/workout/${item.id}`}
@@ -194,19 +214,21 @@ function MyPlanContent() {
                     View Details
                   </Link>
 
-                  <button
-                    onClick={() => toggleMarkAsDone(item.id)}
-                    className={`${
-                      isDone
-                        ? "bg-emerald-600 text-white"
-                        : "bg-[#C2F800] text-black hover:bg-opacity-90"
-                    } font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer`}
-                  >
-                    ✓ {isDone ? "Done" : "Mark as Done"}
-                  </button>
+                  {activeTab === "plan" && (
+                    <button
+                      onClick={() => toggleMarkAsDone(item.id)}
+                      className={`${
+                        isDone
+                          ? "bg-emerald-600 text-white"
+                          : "bg-[#C2F800] text-black hover:bg-opacity-90"
+                      } font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer`}
+                    >
+                      ✓ {isDone ? "Done" : "Mark as Done"}
+                    </button>
+                  )}
 
                   <button
-                    onClick={() => handleRemove(item.id)}
+                    onClick={() => handleRemove(item.id, item.name)}
                     className="text-gray-400 hover:text-white p-2 text-sm transition cursor-pointer"
                     title="Remove"
                   >
