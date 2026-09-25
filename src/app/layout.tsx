@@ -12,7 +12,7 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "FitLog — Workout Library",
+  title: "FitLog — app",
   description: "Train with intent. Log every set.",
 };
 
