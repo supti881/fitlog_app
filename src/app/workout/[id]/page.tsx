@@ -25,11 +25,13 @@ interface Workout {
 export default function WorkoutDetailsPage() {
   const params = useParams();
   const id = params?.id;
-  const { addToPlan, addToSaved } = useFitLog();
+
+  const { planList, savedList, addToPlan, addToSaved } = useFitLog();
 
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     async function fetchWorkoutDetails() {
@@ -50,24 +52,38 @@ export default function WorkoutDetailsPage() {
     }
   }, [id]);
 
-  const showToast = (message: string) => {
-    setToastMessage(message);
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
     setTimeout(() => {
-      setToastMessage(null);
+      setToast(null);
     }, 3000);
   };
 
+  // Add to plan click handler
   const handleAddToPlan = () => {
-    if (workout) {
+    if (!workout) return;
+
+    const isAlreadyInPlan = planList.some((item) => item.id === workout.id);
+
+    if (isAlreadyInPlan) {
+      showToast("Already in your plan", "error");
+    } else {
       addToPlan(workout);
-      showToast("Added to today's plan");
+      showToast("Added to today's plan", "success");
     }
   };
 
+  // Save for later click handler
   const handleSaveForLater = () => {
-    if (workout) {
+    if (!workout) return;
+
+    const isAlreadySaved = savedList.some((item) => item.id === workout.id);
+
+    if (isAlreadySaved) {
+      showToast("Already in your saved list", "error");
+    } else {
       addToSaved(workout);
-      showToast("Saved for later");
+      showToast("Saved for later", "success");
     }
   };
 
@@ -97,18 +113,26 @@ export default function WorkoutDetailsPage() {
   return (
     <div className="relative min-h-screen bg-[#0f1115] text-white py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 bg-[#15171D] border border-[#222630] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-2xl">
-          <span className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black font-bold text-[10px]">
-            ✓
-          </span>
-          <span>{toastMessage}</span>
+      {/* toast notification */}
+      {toast && (
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 bg-[#15171D] border border-[#222630] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-2xl transition duration-300">
+          {toast.type === "success" ? (
+            <span className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black font-bold text-[10px]">
+              ✓
+            </span>
+          ) : (
+            <span className="w-5 h-5 bg-rose-500 rounded-full flex items-center justify-center text-white font-bold text-[10px]">
+              ✕
+            </span>
+          )}
+          <span>{toast.message}</span>
         </div>
       )}
+
+      {/* main layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         
-        {/* Left Image Section */}
+        {/* image section */}
         <div className="lg:col-span-6 w-full aspect-square relative rounded-3xl overflow-hidden bg-[#15171D] border border-[#222630] shadow-xl">
           <Image
             src={workout.image}
@@ -120,10 +144,9 @@ export default function WorkoutDetailsPage() {
           />
         </div>
 
-        {/* Right Info Section */}
         <div className="lg:col-span-6 flex flex-col justify-between">
           
-          {/* Header */}
+          {/* header */}
           <div className="mb-6">
             <h1 className="font-[family-name:var(--font-oswald)] text-3xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-wide text-white mb-3">
               {workout.name}
@@ -132,7 +155,7 @@ export default function WorkoutDetailsPage() {
               {workout.description}
             </p>
 
-            {/* Muscle Group Badges */}
+            {/* group badges */}
             <div className="flex flex-wrap gap-2">
               {workout.muscleGroups.map((muscle, idx) => (
                 <span
@@ -145,7 +168,7 @@ export default function WorkoutDetailsPage() {
             </div>
           </div>
 
-          {/* Specs Table Card */}
+          {/* table card */}
           <div className="bg-[#15171D]/90 border border-[#222630] rounded-2xl p-5 mb-6 space-y-3.5 text-xs sm:text-sm">
             <div className="flex justify-between items-center border-b border-[#222630]/60 pb-2.5">
               <span className="font-bold uppercase tracking-wider text-gray-400">EQUIPMENT</span>
@@ -177,7 +200,7 @@ export default function WorkoutDetailsPage() {
             </div>
           </div>
 
-          {/* Instructions */}
+          {/* instructions */}
           <div className="mb-6">
             <h2 className="font-[family-name:var(--font-oswald)] text-lg font-bold uppercase tracking-wide text-white mb-3">
               INSTRUCTIONS
@@ -191,8 +214,6 @@ export default function WorkoutDetailsPage() {
               ))}
             </ol>
           </div>
-
-          {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-4 pt-1">
             <button
               onClick={handleAddToPlan}
