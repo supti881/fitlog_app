@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useFitLog } from "@/context/FitLogContext";
 
 interface Workout {
   id: number;
@@ -23,8 +24,10 @@ interface Workout {
 
 export default function WorkoutDetailsPage() {
   const params = useParams();
-  const router = useRouter();
   const id = params?.id;
+
+  // Global Context Hook
+  const { addToPlan, addToSaved } = useFitLog();
 
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +59,21 @@ export default function WorkoutDetailsPage() {
     }, 3000);
   };
 
+  // Click Handlers with Context
+  const handleAddToPlan = () => {
+    if (workout) {
+      addToPlan(workout);
+      showToast("Added to today's plan");
+    }
+  };
+
+  const handleSaveForLater = () => {
+    if (workout) {
+      addToSaved(workout);
+      showToast("Saved for later");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center text-[#C2F800] font-bold animate-pulse">
@@ -82,7 +100,7 @@ export default function WorkoutDetailsPage() {
   return (
     <div className="relative min-h-screen bg-[#0f1115] text-white py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       
-      {/* Top Right Toast Notification */}
+      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 flex items-center gap-2 bg-[#15171D] border border-[#222630] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-2xl">
           <span className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black font-bold text-[10px]">
@@ -124,7 +142,7 @@ export default function WorkoutDetailsPage() {
               {workout.muscleGroups.map((muscle, idx) => (
                 <span
                   key={idx}
-                 className="bg-[#C2F800] text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide"
+                  className="bg-[#C2F800] text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide"
                 >
                   {muscle}
                 </span>
@@ -182,13 +200,13 @@ export default function WorkoutDetailsPage() {
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-4 pt-1">
             <button
-              onClick={() => showToast("Added to today's plan")}
+              onClick={handleAddToPlan}
               className="bg-[#C2F800] text-black font-bold text-xs sm:text-sm px-6 py-3 rounded-xl hover:bg-opacity-90 transition flex items-center gap-2 cursor-pointer"
             >
               <span className="text-base">📅</span> Add to today&apos;s plan
             </button>
             <button
-              onClick={() => showToast("Saved for later")}
+              onClick={handleSaveForLater}
               className="bg-[#15171D] border border-[#222630] hover:border-gray-500 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-xl transition flex items-center gap-2 cursor-pointer"
             >
               <span className="text-base">🔖</span> Save for later
